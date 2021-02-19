@@ -66,7 +66,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.appsmith.external.helpers.BeanCopyUtils.copyNewFieldValuesIntoOldObject;
@@ -1067,23 +1066,6 @@ public class NewActionServiceImpl extends BaseService<NewActionRepository, NewAc
         return actionMono
                 .flatMap(toDelete -> repository.delete(toDelete).thenReturn(toDelete))
                 .flatMap(analyticsService::sendDeleteEvent);
-    }
-
-    public List<String> extractMustacheKeysInOrder(String query) {
-        return MustacheHelper.extractMustacheKeysInOrder(query);
-    }
-
-    @Override
-    public String replaceMustacheWithQuestionMark(String query, List<String> mustacheBindings) {
-
-        ActionConfiguration actionConfiguration = new ActionConfiguration();
-        actionConfiguration.setBody(query);
-        Map<String, String> replaceParamsMap = mustacheBindings
-                .stream()
-                .collect(Collectors.toMap(Function.identity(), v -> "?"));
-
-        ActionConfiguration updatedActionConfiguration = MustacheHelper.renderFieldValues(actionConfiguration, replaceParamsMap);
-        return updatedActionConfiguration.getBody();
     }
 
     private Mono<Datasource> updateDatasourcePolicyForPublicAction(Set<Policy> actionPolicies, Datasource datasource) {
