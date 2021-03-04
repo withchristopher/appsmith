@@ -37,7 +37,7 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>${reactor.core.version}</version>
+            <version>3.3.11.RELEASE</version>
         </dependency>
 
         <dependency>
@@ -79,18 +79,18 @@
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-mongodb</artifactId>
-            <version>${querydsl.version}</version>
+            <version>4.2.2</version>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-apt</artifactId>
-            <version>${querydsl.version}</version>
+            <version>4.2.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
-            <version>${querydsl.version}</version>
+            <version>4.2.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

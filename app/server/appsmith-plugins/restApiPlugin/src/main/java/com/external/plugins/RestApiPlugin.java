@@ -8,7 +8,6 @@ import com.appsmith.external.models.ActionExecutionRequest;
 import com.appsmith.external.models.ActionExecutionResult;
 import com.appsmith.external.models.DatasourceConfiguration;
 import com.appsmith.external.models.DatasourceTestResult;
-import com.appsmith.external.models.HttpProxy;
 import com.appsmith.external.models.PaginationField;
 import com.appsmith.external.models.PaginationType;
 import com.appsmith.external.models.Property;
@@ -32,7 +31,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
-import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.MultiValueMap;
@@ -44,8 +42,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
-import reactor.netty.http.client.HttpClient;
-import reactor.netty.tcp.ProxyProvider;
 
 import javax.crypto.SecretKey;
 import java.io.IOException;
@@ -237,29 +233,12 @@ public class RestApiPlugin extends BasePlugin {
                 webClientBuilder.filter(apiConnection);
             }
 
-            // Configuring proxy settings
-            HttpProxy httpProxy = datasourceConfiguration.getHttpProxy();
-            if (httpProxy != null) {
-                // If the host parameter is null, the proxy will automatically be bypassed
-                HttpClient httpClient = HttpClient.create()
-                        .tcpConfiguration(tcpClient -> tcpClient.proxy(proxy -> proxy.type(ProxyProvider.Proxy.HTTP)
-                                .host(httpProxy.getHost())
-                                .port(httpProxy.getPort())
-                                .username(httpProxy.getUsername())
-                                .password(p -> httpProxy.getPassword())
-                        ));
-
-                ReactorClientHttpConnector connector = new ReactorClientHttpConnector(httpClient);
-                webClientBuilder.clientConnector(connector);
-            }
-
             WebClient client = webClientBuilder.exchangeStrategies(EXCHANGE_STRATEGIES).filter(logRequest()).build();
 
             // Triggering the actual REST API call
             return httpCall(client, httpMethod, uri, requestBodyAsString, 0, reqContentType)
                     .flatMap(clientResponse -> clientResponse.toEntity(byte[].class))
                     .map(stringResponseEntity -> {
-                        System.out.println("Got response: " + stringResponseEntity);
                         HttpHeaders headers = stringResponseEntity.getHeaders();
                         // Find the media type of the response to parse the body as required.
                         MediaType contentType = headers.getContentType();
@@ -554,19 +533,6 @@ public class RestApiPlugin extends BasePlugin {
 
             if (datasourceConfiguration.getAuthentication() != null) {
                 invalids.addAll(DatasourceValidator.validateAuthentication(datasourceConfiguration.getAuthentication()));
-            }
-
-            HttpProxy httpProxy = datasourceConfiguration.getHttpProxy();
-            if(httpProxy != null && httpProxy.getHost() != null) {
-                if (httpProxy.getHost().contains("://")) {
-                    invalids.add("HTTP proxy hosts shouldn't contain the protocol. Please use only the base host name");
-                }
-                if (httpProxy.getPort() == null) {
-                    invalids.add("Mandatory port missing for proxy host settings. Please add valid port");
-                }
-                if (httpProxy.getUsername() != null && httpProxy.getPassword() == null) {
-                    invalids.add("Mandatory password missing for proxy server authentication. Please add a valid password");
-                }
             }
 
             return invalids;

@@ -3,7 +3,6 @@ package com.external.plugins;
 import com.appsmith.external.models.ActionConfiguration;
 import com.appsmith.external.models.ActionExecutionResult;
 import com.appsmith.external.models.DatasourceConfiguration;
-import com.appsmith.external.models.HttpProxy;
 import com.appsmith.external.models.OAuth2;
 import com.appsmith.external.models.Property;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,17 +11,16 @@ import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpMethod;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import javax.crypto.SecretKey;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import javax.crypto.SecretKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -282,7 +280,7 @@ public class RestApiPluginTest {
     }
 
     @Test
-    public void testValidateDatasource_invalidOAuth2Authentication() {
+    public void testValidateDatasource_invalidAuthentication() {
         DatasourceConfiguration datasourceConfiguration = new DatasourceConfiguration();
         OAuth2 oAuth2 = new OAuth2();
         oAuth2.setGrantType(OAuth2.Type.CLIENT_CREDENTIALS);
@@ -295,47 +293,4 @@ public class RestApiPluginTest {
                 .create(invalidsMono)
                 .assertNext(invalids -> invalids.containsAll(Set.of("Missing Client ID", "Missing Client Secret", "Missing Access Token URL")));
     }
-
-    @Test
-    public void testValidateDatasource_invalidProxyPort() {
-        DatasourceConfiguration datasourceConfiguration = new DatasourceConfiguration();
-        datasourceConfiguration.setUrl("https://postman-echo.com/post");
-        HttpProxy httpProxy = new HttpProxy();
-        httpProxy.setHost("localhost");
-        datasourceConfiguration.setHttpProxy(httpProxy);
-
-        Set<String> invalids = pluginExecutor.validateDatasource(datasourceConfiguration);
-
-        Assert.assertTrue(invalids.containsAll(Set.of("Mandatory port missing for proxy host settings. Please add valid port")));
-    }
-
-    @Test
-    public void testValidateDatasource_invalidProxyHost() {
-        DatasourceConfiguration datasourceConfiguration = new DatasourceConfiguration();
-        datasourceConfiguration.setUrl("https://postman-echo.com/post");
-        HttpProxy httpProxy = new HttpProxy();
-        httpProxy.setHost("http://localhost");
-        httpProxy.setPort(3128);
-        datasourceConfiguration.setHttpProxy(httpProxy);
-
-        Set<String> invalids = pluginExecutor.validateDatasource(datasourceConfiguration);
-
-        Assert.assertTrue(invalids.containsAll(Set.of("HTTP proxy hosts shouldn't contain the protocol. Please use only the base host name")));
-    }
-
-    @Test
-    public void testValidateDatasource_invalidProxyPassword() {
-        DatasourceConfiguration datasourceConfiguration = new DatasourceConfiguration();
-        datasourceConfiguration.setUrl("https://postman-echo.com/post");
-        HttpProxy httpProxy = new HttpProxy();
-        httpProxy.setHost("localhost");
-        httpProxy.setPort(3128);
-        httpProxy.setUsername("testuser");
-        datasourceConfiguration.setHttpProxy(httpProxy);
-
-        Set<String> invalids = pluginExecutor.validateDatasource(datasourceConfiguration);
-
-        Assert.assertTrue(invalids.containsAll(Set.of("Mandatory password missing for proxy server authentication. Please add a valid password")));
-    }
-
 }

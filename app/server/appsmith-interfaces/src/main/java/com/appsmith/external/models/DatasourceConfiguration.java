@@ -23,8 +23,6 @@ public class DatasourceConfiguration {
 
     SSHConnection sshProxy;
 
-    HttpProxy httpProxy;
-
     Boolean sshProxyEnabled;
 
     List<Property> properties;
