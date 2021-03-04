@@ -157,17 +157,17 @@
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-mongodb</artifactId>
-            <version>4.2.2</version>
+            <version>${querydsl.version}</version>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-apt</artifactId>
-            <version>4.2.2</version>
+            <version>${querydsl.version}</version>
         </dependency>
         <dependency>
             <groupId>com.querydsl</groupId>
             <artifactId>querydsl-jpa</artifactId>
-            <version>4.2.2</version>
+            <version>${querydsl.version}</version>
         </dependency>
 
         <dependency>
