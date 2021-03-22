@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -50,6 +51,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class MongoPlugin extends BasePlugin {
@@ -69,6 +71,8 @@ public class MongoPlugin extends BasePlugin {
     public static final String N_MODIFIED = "nModified";
 
     private static final String VALUE_STR = "value";
+
+    private static final int TEST_DATASOURCE_TIMEOUT_SECONDS = 15;
 
     public MongoPlugin(PluginWrapper wrapper) {
         super(wrapper);
@@ -184,10 +188,15 @@ public class MongoPlugin extends BasePlugin {
 
                         return Mono.just(result);
                     })
-                    .onErrorResume(AppsmithPluginException.class, error  -> {
+                    .onErrorResume(error  -> {
+                        if (error instanceof StaleConnectionException) {
+                            return Mono.error(error);
+                        }
                         ActionExecutionResult actionExecutionResult = new ActionExecutionResult();
                         actionExecutionResult.setIsExecutionSuccess(false);
-                        actionExecutionResult.setStatusCode(error.getAppErrorCode().toString());
+                        if (error instanceof AppsmithPluginException) {
+                            actionExecutionResult.setStatusCode(((AppsmithPluginException) error).getAppErrorCode().toString());
+                        }
                         actionExecutionResult.setBody(error.getMessage());
                         return Mono.just(actionExecutionResult);
                     })
@@ -223,7 +232,13 @@ public class MongoPlugin extends BasePlugin {
              */
 
             return Mono.just(datasourceConfiguration)
-                    .map(MongoPluginExecutor::buildClientURI)
+                    .flatMap(dsConfig -> {
+                        try {
+                            return Mono.just(buildClientURI(dsConfig));
+                        } catch (AppsmithPluginException e) {
+                            return Mono.error(e);
+                        }
+                    })
                     .map(MongoClients::create)
                     .onErrorMap(
                             IllegalArgumentException.class,
@@ -243,7 +258,7 @@ public class MongoPlugin extends BasePlugin {
                     .subscribeOn(scheduler);
         }
 
-        public static String buildClientURI(DatasourceConfiguration datasourceConfiguration) {
+        public static String buildClientURI(DatasourceConfiguration datasourceConfiguration) throws AppsmithPluginException {
             StringBuilder builder = new StringBuilder();
 
             final Connection connection = datasourceConfiguration.getConnection();
@@ -294,9 +309,42 @@ public class MongoPlugin extends BasePlugin {
 
             List<String> queryParams = new ArrayList<>();
 
-            final SSLDetails sslDetails = connection.getSsl();
-            if (sslDetails != null && !SSLDetails.AuthType.NO_SSL.equals(sslDetails.getAuthType())) {
-                queryParams.add("ssl=true");
+            /*
+             * - Ideally, it is never expected to be null because the SSL dropdown is set to a initial value.
+             */
+            if(datasourceConfiguration.getConnection() == null
+                    || datasourceConfiguration.getConnection().getSsl() == null
+                    || datasourceConfiguration.getConnection().getSsl().getAuthType() == null) {
+                throw new AppsmithPluginException(
+                        AppsmithPluginError.PLUGIN_ERROR,
+                        "Appsmith server has failed to fetch SSL configuration from datasource configuration form. " +
+                                "Please reach out to Appsmith customer support to resolve this."
+                );
+            }
+
+            /*
+             * - By default, the driver configures SSL in the preferred mode.
+             */
+            SSLDetails.AuthType sslAuthType = datasourceConfiguration.getConnection().getSsl().getAuthType();
+            switch (sslAuthType) {
+                case ENABLED:
+                    queryParams.add("ssl=true");
+
+                    break;
+                case DISABLED:
+                    queryParams.add("ssl=false");
+
+                    break;
+                case DEFAULT:
+                    /* do nothing - accept default driver setting */
+
+                    break;
+                default:
+                    throw new AppsmithPluginException(
+                            AppsmithPluginError.PLUGIN_ERROR,
+                            "Appsmith server has found an unexpected SSL option. Please reach out to Appsmith " +
+                                    "customer support to resolve this."
+                    );
             }
 
             if (authentication != null && authentication.getAuthType() != null) {
@@ -338,6 +386,17 @@ public class MongoPlugin extends BasePlugin {
 
             }
 
+            if(!CollectionUtils.isEmpty(endpoints)) {
+                boolean usingSrvUrl = endpoints
+                        .stream()
+                        .anyMatch(endPoint -> endPoint.getHost().contains("mongodb+srv"));
+
+                if (usingSrvUrl) {
+                    invalids.add("MongoDb SRV URLs are not yet supported. Please extract the individual fields from " +
+                            "the SRV URL into the datasource configuration form.");
+                }
+            }
+
             DBAuth authentication = (DBAuth) datasourceConfiguration.getAuthentication();
             if (authentication != null) {
                 DBAuth.Type authType = authentication.getAuthType();
@@ -350,6 +409,16 @@ public class MongoPlugin extends BasePlugin {
                     invalids.add("Missing database name.");
                 }
 
+            }
+
+            /*
+             * - Ideally, it is never expected to be null because the SSL dropdown is set to a initial value.
+             */
+            if(datasourceConfiguration.getConnection() == null
+                    || datasourceConfiguration.getConnection().getSsl() == null
+                    || datasourceConfiguration.getConnection().getSsl().getAuthType() == null) {
+                invalids.add("Appsmith server has failed to fetch SSL configuration from datasource configuration " +
+                        "form. Please reach out to Appsmith customer support to resolve this.");
             }
 
             return invalids;
@@ -371,6 +440,15 @@ public class MongoPlugin extends BasePlugin {
                         }
                     })
                     .then(Mono.just(new DatasourceTestResult()))
+                    .timeout(Duration.ofSeconds(TEST_DATASOURCE_TIMEOUT_SECONDS))
+                    .onErrorMap(
+                            TimeoutException.class,
+                            error -> new AppsmithPluginException(
+                                    AppsmithPluginError.PLUGIN_DATASOURCE_TIMEOUT_ERROR,
+                                    "Connection timed out. Please check if the datasource configuration fields have " +
+                                            "been filled correctly."
+                            )
+                    )
                     .onErrorResume(error -> {
                         /**
                          * 1. Return OK response on "Unauthorized" exception.

@@ -17,7 +17,8 @@ describe("Moustache test Functionality", function() {
     cy.CreateAPI("TestAPINew");
     cy.log("Creation of API Action successful");
     cy.enterDatasourceAndPath(testdata.baseUrl, testdata.moustacheMethod);
-    cy.wait(300);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(1000);
     cy.RunAPI();
     cy.ResponseStatusCheck(testdata.successStatusCode);
     cy.log("Response code check successful");

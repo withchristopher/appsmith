@@ -1,4 +1,4 @@
-import { FetchPageRequest, SavePageResponse } from "api/PageApi";
+import { FetchPageRequest, PageLayout, SavePageResponse } from "api/PageApi";
 import { WidgetOperation } from "widgets/BaseWidget";
 import { WidgetType } from "constants/WidgetConstants";
 import {
@@ -97,10 +97,13 @@ export const deletePageSuccess = () => {
   };
 };
 
-export const updateAndSaveLayout = (widgets: CanvasWidgetsReduxState) => {
+export const updateAndSaveLayout = (
+  widgets: CanvasWidgetsReduxState,
+  isRetry?: boolean,
+) => {
   return {
     type: ReduxActionTypes.UPDATE_LAYOUT,
-    payload: { widgets },
+    payload: { widgets, isRetry },
   };
 };
 
@@ -110,7 +113,11 @@ export const saveLayout = () => {
   };
 };
 
-export const createPage = (applicationId: string, pageName: string) => {
+export const createPage = (
+  applicationId: string,
+  pageName: string,
+  layouts: Partial<PageLayout>[],
+) => {
   AnalyticsUtil.logEvent("CREATE_PAGE", {
     pageName,
   });
@@ -119,6 +126,7 @@ export const createPage = (applicationId: string, pageName: string) => {
     payload: {
       applicationId,
       name: pageName,
+      layouts,
     },
   };
 };

@@ -27,6 +27,8 @@ import { ReactComponent as ArrowLeft } from "assets/icons/ads/arrow-left.svg";
 import { ReactComponent as Fork } from "assets/icons/ads/fork.svg";
 import { ReactComponent as ChevronLeft } from "assets/icons/ads/chevron_left.svg";
 import { ReactComponent as ChevronRight } from "assets/icons/ads/chevron_right.svg";
+import { ReactComponent as LinkIcon } from "assets/icons/ads/link.svg";
+import { ReactComponent as HelpIcon } from "assets/icons/help/help.svg";
 import { ReactComponent as CloseModalIcon } from "assets/icons/ads/close-modal.svg";
 import { ReactComponent as NoResponseIcon } from "assets/icons/ads/no-response.svg";
 import { ReactComponent as LightningIcon } from "assets/icons/ads/lightning.svg";
@@ -44,6 +46,7 @@ import { CommonComponentProps, Classes } from "./common";
 import { noop } from "lodash";
 import { theme } from "constants/DefaultTheme";
 import Spinner from "./Spinner";
+import { ControlIcons } from "icons/ControlIcons";
 
 export enum IconSize {
   XXS = "extraExtraSmall",
@@ -120,6 +123,8 @@ export const IconCollection = [
   "fork",
   "chevron-left",
   "chevron-right",
+  "link",
+  "help",
   "close-modal",
   "no-response",
   "lightning",
@@ -131,6 +136,11 @@ export const IconCollection = [
   "mobile",
   "tablet",
   "fluid",
+  "HEADING_ONE",
+  "HEADING_TWO",
+  "HEADING_THREE",
+  "PARAGRAPH",
+  "PARAGRAPH_TWO",
 ] as const;
 
 export type IconName = typeof IconCollection[number];
@@ -265,6 +275,12 @@ const Icon = forwardRef(
       case "chevron-right":
         returnIcon = <ChevronRight />;
         break;
+      case "link":
+        returnIcon = <LinkIcon />;
+        break;
+      case "help":
+        returnIcon = <HelpIcon />;
+        break;
       case "close-modal":
         returnIcon = <CloseModalIcon />;
         break;
@@ -297,6 +313,15 @@ const Icon = forwardRef(
         break;
       case "fluid":
         returnIcon = <FluidIcon />;
+        break;
+
+      case "HEADING_ONE":
+      case "HEADING_TWO":
+      case "HEADING_THREE":
+      case "PARAGRAPH":
+      case "PARAGRAPH_TWO":
+        const ControlIcon = ControlIcons[props.name];
+        returnIcon = <ControlIcon width={24} height={24} />;
         break;
 
       default:

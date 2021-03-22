@@ -168,10 +168,12 @@ public class FirestorePlugin extends BasePlugin {
                             return handleCollectionLevelMethod(connection, path, method, properties, mapBody, paginationField);
                         }
                     })
-                    .onErrorResume(AppsmithPluginException.class, error  -> {
+                    .onErrorResume(error  -> {
                         ActionExecutionResult result = new ActionExecutionResult();
                         result.setIsExecutionSuccess(false);
-                        result.setStatusCode(error.getAppErrorCode().toString());
+                        if (error instanceof AppsmithPluginException) {
+                            result.setStatusCode(((AppsmithPluginException) error).getAppErrorCode().toString());
+                        }
                         result.setBody(error.getMessage());
                         return Mono.just(result);
                     })
@@ -360,7 +362,10 @@ public class FirestorePlugin extends BasePlugin {
                         final List<Object> startAfterValues = new ArrayList<>();
                         final List<Object> endBeforeValues = new ArrayList<>();
                         for (final String field : orderings) {
-                            q = q.orderBy(field);
+                            q = q.orderBy(
+                                    field.replaceAll("^-", ""),
+                                    field.startsWith("-") ? Query.Direction.DESCENDING : Query.Direction.ASCENDING
+                            );
                             if (startAfter != null) {
                                 startAfterValues.add(startAfter.get(field));
                             }
