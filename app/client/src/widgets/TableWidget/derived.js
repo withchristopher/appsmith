@@ -126,9 +126,9 @@ export default {
             isVisible: true,
             isDerived: false,
             label: id,
-            computedValue: props.sanitizedTableData.map((currentRow) => {
-              return currentRow[id];
-            }),
+            computedValue: props.sanitizedTableData.map(
+              (currentRow) => currentRow[id],
+            ),
           };
         }
       });
