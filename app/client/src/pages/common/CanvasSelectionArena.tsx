@@ -37,7 +37,9 @@ export const CanvasSelectionArena = memo(
   ({ widgetId }: { widgetId: string }) => {
     const dispatch = useDispatch();
     const appMode = useSelector(getAppMode);
-
+    const isDragging = useSelector(
+      (state: AppState) => state.ui.widgetDragResize.isDragging,
+    );
     const mainContainer = useSelector((state: AppState) =>
       getWidget(state, MAIN_CONTAINER_WIDGET_ID),
     );
@@ -69,7 +71,7 @@ export const CanvasSelectionArena = memo(
       [widgetId],
     );
     useEffect(() => {
-      if (appMode === APP_MODE.EDIT) {
+      if (appMode === APP_MODE.EDIT && !isDragging) {
         const selectionCanvas: any = document.getElementById(
           `canvas-${widgetId}`,
         );
@@ -239,9 +241,10 @@ export const CanvasSelectionArena = memo(
       mainContainer.rightColumn,
       mainContainer.bottomRow,
       mainContainer.minHeight,
+      isDragging,
     ]);
 
-    return appMode === APP_MODE.EDIT ? (
+    return appMode === APP_MODE.EDIT && !isDragging ? (
       <StyledSelectionCanvas
         data-testid={`canvas-${widgetId}`}
         id={`canvas-${widgetId}`}

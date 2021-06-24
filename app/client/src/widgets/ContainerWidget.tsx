@@ -138,7 +138,7 @@ class ContainerWidget extends BaseWidget<
             widgetId={props.widgetId}
           />
         )}
-        {/* <CanvasSelectionArena widgetId={props.widgetId} /> */}
+        <CanvasSelectionArena widgetId={props.widgetId} />
         {/* without the wrapping div onClick events are triggered twice */}
         <>{this.renderChildren()}</>
       </ContainerComponent>
