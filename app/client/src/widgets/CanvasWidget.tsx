@@ -7,7 +7,6 @@ import { getCanvasSnapRows } from "utils/WidgetPropsUtils";
 import { getCanvasClassName } from "utils/generators";
 import * as Sentry from "@sentry/react";
 import WidgetFactory from "utils/WidgetFactory";
-import { CanvasDraggingArena } from "pages/common/CanvasDraggingArena";
 
 class CanvasWidget extends ContainerWidget {
   static getPropertyPaneConfig() {
@@ -30,13 +29,6 @@ class CanvasWidget extends ContainerWidget {
 
   renderAsDropTarget() {
     const canvasProps = this.getCanvasProps();
-    const childWidgets = (this.props.children || []).map((each) => {
-      return each.widgetId;
-    });
-    const snapRows = getCanvasSnapRows(
-      this.props.bottomRow,
-      this.props.canExtend,
-    );
     return (
       <DropTargetComponent
         {...canvasProps}

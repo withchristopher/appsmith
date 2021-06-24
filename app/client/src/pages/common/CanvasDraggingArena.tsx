@@ -1,23 +1,12 @@
-import {
-  selectAllWidgetsInAreaAction,
-  setCanvasSelectionStateAction,
-} from "actions/canvasSelectionActions";
 import { OccupiedSpace } from "constants/editorConstants";
 import {
   CONTAINER_GRID_PADDING,
   GridDefaults,
-  MAIN_CONTAINER_WIDGET_ID,
 } from "constants/WidgetConstants";
-import { omit, throttle } from "lodash";
-import React, { memo, useEffect, useCallback } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { AppState } from "reducers";
-import { getWidget, getWidgets } from "sagas/selectors";
-import {
-  getCurrentApplicationLayout,
-  getCurrentPageId,
-  getOccupiedSpaces,
-} from "selectors/editorSelectors";
+import { getOccupiedSpaces } from "selectors/editorSelectors";
 import { getSelectedWidgets } from "selectors/ui";
 import styled from "styled-components";
 import { useWidgetDragResize } from "utils/hooks/dragResizeHooks";
@@ -85,14 +74,14 @@ const noCollision = (
 };
 
 export function CanvasDraggingArena({
-  childWidgets,
+  // childWidgets,
   noPad,
   snapColumnSpace,
   snapRows,
   snapRowSpace,
   widgetId,
 }: {
-  childWidgets: string[];
+  // childWidgets: string[];
   noPad?: boolean;
   snapColumnSpace: number;
   snapRows: number;
@@ -136,7 +125,6 @@ export function CanvasDraggingArena({
         `canvas-dragging-${widgetId}`,
       );
       // draggingCanvas.style.padding = `${noPad ? 0 : CONTAINER_GRID_PADDING}px`;
-      const bounds = draggingCanvas.getBoundingClientRect();
       const { height, width } = draggingCanvas.getBoundingClientRect();
       draggingCanvas.width = width;
       draggingCanvas.height = height;
@@ -159,7 +147,7 @@ export function CanvasDraggingArena({
         left: 0,
         top: 0,
       };
-      const onMouseUp = (e: any) => {
+      const onMouseUp = () => {
         startPoints.left = 0;
         startPoints.top = 0;
         setIsDragging(false);

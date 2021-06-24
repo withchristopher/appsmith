@@ -122,9 +122,9 @@ class ContainerWidget extends BaseWidget<
   };
 
   renderAsContainerComponent(props: ContainerWidgetProps<WidgetProps>) {
-    const childWidgets = (props.children || []).map((each) => {
-      return each.widgetId;
-    });
+    // const childWidgets = (props.children || []).map((each) => {
+    //   return each.widgetId;
+    // });
     const snapRows = getCanvasSnapRows(props.bottomRow, props.canExtend);
 
     return (
@@ -132,7 +132,7 @@ class ContainerWidget extends BaseWidget<
         {props.type === "CANVAS_WIDGET" && (
           <CanvasDraggingArena
             {...this.getSnapSpaces()}
-            childWidgets={childWidgets}
+            // childWidgets={childWidgets}
             noPad={this.props.noPad}
             snapRows={snapRows}
             widgetId={props.widgetId}
