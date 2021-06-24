@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { WidgetProps } from "widgets/BaseWidget";
 import { useDrag, DragSourceMonitor } from "react-dnd";
 import { WIDGET_PADDING } from "constants/WidgetConstants";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "reducers";
 import { getColorWithOpacity } from "constants/DefaultTheme";
 import {
@@ -13,6 +13,7 @@ import {
 import AnalyticsUtil from "utils/AnalyticsUtil";
 import { commentModeSelector } from "selectors/commentsSelectors";
 import { useWidgetSelection } from "utils/hooks/useWidgetSelection";
+import { selectWidgetInitAction } from "actions/widgetSelectionActions";
 
 const DraggableWrapper = styled.div`
   display: block;
@@ -69,7 +70,7 @@ function DraggableComponent(props: DraggableComponentProps) {
 
   // Dispatch hook handy to set any `DraggableComponent` as dragging/ not dragging
   // The value is boolean
-  const { setIsDragging } = useWidgetDragResize();
+  const { setDragItemsInitialParent, setIsDragging } = useWidgetDragResize();
 
   // This state tells us which widget is selected
   // The value is the widgetId of the selected widget
@@ -118,7 +119,6 @@ function DraggableComponent(props: DraggableComponentProps) {
 
       // Tell the rest of the application that a widget has started dragging
       setIsDragging && setIsDragging(true);
-
       AnalyticsUtil.logEvent("WIDGET_DRAG", {
         widgetName: props.widgetName,
         widgetType: props.type,
@@ -185,14 +185,23 @@ function DraggableComponent(props: DraggableComponentProps) {
     .split("_")
     .join("")
     .toLowerCase()}`;
+  // const { setIsDragging } = useWidgetDragResize();
 
   const className = `${classNameForTesting}`;
-
+  const dispatch = useDispatch();
   return (
     <DraggableWrapper
       className={className}
+      draggable
+      onDragStart={(e) => {
+        e.preventDefault();
+        setDragItemsInitialParent(true, props.parentId || "", props.widgetId);
+        if (!selectedWidgets.includes(props.widgetId)) {
+          dispatch(selectWidgetInitAction(props.widgetId));
+        }
+        e.stopPropagation();
+      }}
       onMouseOver={handleMouseOver}
-      ref={drag}
       style={style}
     >
       {shouldRenderComponent && props.children}

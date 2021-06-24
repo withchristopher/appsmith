@@ -64,6 +64,7 @@ function Onboarding() {
 export const DropTargetContext: Context<{
   updateDropTargetRows?: (widgetId: string, row: number) => boolean;
   persistDropTargetRows?: (widgetId: string, row: number) => void;
+  handleBoundsUpdate?: (rect: DOMRect) => void;
 }> = createContext({});
 
 export function DropTargetComponent(props: DropTargetComponentProps) {
@@ -260,7 +261,11 @@ export function DropTargetComponent(props: DropTargetComponentProps) {
 
   return (
     <DropTargetContext.Provider
-      value={{ updateDropTargetRows, persistDropTargetRows }}
+      value={{
+        updateDropTargetRows,
+        persistDropTargetRows,
+        handleBoundsUpdate,
+      }}
     >
       <StyledDropTarget
         className={"t--drop-target"}
