@@ -134,12 +134,16 @@ export function CanvasDraggingArena({
           differentParent && dragCenterSpace
             ? dragCenterSpace.top * snapRowSpace +
               (noPad ? 0 : CONTAINER_GRID_PADDING)
-            : 0,
+            : noPad
+            ? 0
+            : CONTAINER_GRID_PADDING,
         left:
           differentParent && dragCenterSpace
             ? dragCenterSpace.left * snapColumnSpace +
               (noPad ? 0 : CONTAINER_GRID_PADDING)
-            : 0,
+            : noPad
+            ? 0
+            : CONTAINER_GRID_PADDING,
       };
       const canvasCtx = draggingCanvas.getContext("2d");
       canvasCtx.globalCompositeOperation = "destination-over";
@@ -188,7 +192,6 @@ export function CanvasDraggingArena({
           newRectanglesToDraw.forEach((each) => {
             drawRectangle(each);
           });
-          console.log(newRectanglesToDraw);
         } else {
           onMouseDown(e);
         }
@@ -238,8 +241,8 @@ export function CanvasDraggingArena({
           isNotColliding ? "rgb(104,	113,	239, 0.6)" : "red"
         }`;
         canvasCtx.fillRect(
-          selectionDimensions.left,
-          selectionDimensions.top,
+          selectionDimensions.left + (noPad ? 0 : CONTAINER_GRID_PADDING),
+          selectionDimensions.top + (noPad ? 0 : CONTAINER_GRID_PADDING),
           selectionDimensions.width,
           selectionDimensions.height,
         );
