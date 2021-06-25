@@ -172,7 +172,9 @@ function DraggableComponent(props: DraggableComponentProps) {
     <WidgetBoundaries
       style={{
         opacity:
-          isResizingOrDragging && selectedWidget !== props.widgetId ? 1 : 0,
+          isResizingOrDragging && !selectedWidgets.includes(props.widgetId)
+            ? 1
+            : 0,
         position: "absolute",
         transform: `translate(-50%, -50%)`,
         top: "50%",
