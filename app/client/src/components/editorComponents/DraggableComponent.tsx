@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useState } from "react";
 import styled from "styled-components";
 import { WidgetProps } from "widgets/BaseWidget";
 import { useDrag, DragSourceMonitor } from "react-dnd";
@@ -189,19 +189,31 @@ function DraggableComponent(props: DraggableComponentProps) {
 
   const className = `${classNameForTesting}`;
   const dispatch = useDispatch();
+  const [mightBeDragging, setMightBeDragging] = useState(false);
+  const mouseMove = (e: any) => {
+    if (mightBeDragging) {
+      e.preventDefault();
+      setDragItemsInitialParent(true, props.parentId || "", props.widgetId);
+      if (!selectedWidgets.includes(props.widgetId)) {
+        dispatch(selectWidgetInitAction(props.widgetId));
+      }
+      setMightBeDragging(false);
+      e.stopPropagation();
+    }
+  };
   return (
     <DraggableWrapper
       className={className}
-      draggable
-      onDragStart={(e) => {
-        e.preventDefault();
-        setDragItemsInitialParent(true, props.parentId || "", props.widgetId);
-        if (!selectedWidgets.includes(props.widgetId)) {
-          dispatch(selectWidgetInitAction(props.widgetId));
-        }
+      onMouseDown={(e) => {
+        setMightBeDragging(true);
         e.stopPropagation();
       }}
+      onMouseMove={mouseMove}
       onMouseOver={handleMouseOver}
+      onMouseUp={(e) => {
+        setMightBeDragging(false);
+        e.stopPropagation();
+      }}
       style={style}
     >
       {shouldRenderComponent && props.children}

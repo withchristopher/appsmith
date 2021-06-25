@@ -22,7 +22,13 @@ const StyledSelectionCanvas = styled.canvas`
   position: absolute;
   top: 0px;
   left: 0px;
-  height: calc(100% + ${(props) => props.theme.canvasBottomPadding}px);
+  height: calc(
+    100% +
+      ${(props) =>
+        props.id === "canvas-dragging-0"
+          ? props.theme.canvasBottomPadding
+          : 0}px
+  );
   width: 100%;
   overflow-y: auto;
 `;

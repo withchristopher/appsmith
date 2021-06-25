@@ -55,7 +55,13 @@ export function PositionedContainer(props: PositionedContainerProps) {
       width: props.style.componentWidth + (props.style.widthUnit || "px"),
       padding: padding + "px",
       zIndex:
-        isDragging && props.widgetType === "CONTAINER_WIDGET"
+        isDragging &&
+        [
+          "CONTAINER_WIDGET",
+          "FORM_WIDGET",
+          "LIST_WIDGET",
+          "TABS_WIDGET",
+        ].includes(props.widgetType)
           ? 3
           : props.selected || props.focused
           ? Layers.selectedWidget
