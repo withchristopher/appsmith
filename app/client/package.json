@@ -88,7 +88,7 @@
     "loglevel": "^1.6.7",
     "lottie-web": "^5.7.4",
     "marked": "^2.0.0",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "moment-timezone": "^0.5.27",
     "nanoid": "^2.0.4",
     "node-sass": "^6.0.1",
